@@ -34,11 +34,11 @@ class ElveflowMSRD(object):
 	def init_SensorReader(self,channel_4list:list,custom_Voltage_2ch:list=[0,0]):
 		"""Initialize the Elveflow sensor reader
 			
-			Args:
-				channel_4list: 4 list of sensor types connected to sensor reader i.e.[0,5,10,0]
-				custom_Voltage_2ch: Custom Voltage for ch12 and ch34, range 5-25V, default=[0,0]
-			Returns:
-				tuple: error,Instr_ID
+		Args:
+			channel_4list: 4 list of sensor types connected to sensor reader i.e.[0,5,10,0]
+			custom_Voltage_2ch: Custom Voltage for ch12 and ch34, range 5-25V, default=[0,0]
+		Returns:
+			tuple: error,Instr_ID
 		"""
 		error=M_S_R_D_Initialization(self.SensorReaderName,*channel_4list,*custom_Voltage_2ch,byref(self.Instr_ID))
 		# error=0 if initialization succeeded,else return error,Instr_ID=-1
