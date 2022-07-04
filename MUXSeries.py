@@ -121,4 +121,8 @@ class Multiplexer(object):
         """
         error=MUX_Destructor(self.Instr_ID)
         return error
-    
+
+if __name__=="__main__":
+    # bulid one multiplexer with name from NI MAX tool
+    Mux_valve=Multiplexer(name='Mux')
+    Mux_valve.initialize_MUX()
