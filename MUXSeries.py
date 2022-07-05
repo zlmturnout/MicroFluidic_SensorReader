@@ -2,14 +2,14 @@ import re
 import sys,time
 from ctypes import *
 
-from cv2 import error
 from Elveflow64 import MUX_Destructor,MUX_Initialization,MUX_Set_all_valves,MUX_Get_Trig,MUX_Set_Trig,MUX_Set_indiv_valve,MUX_Wire_Set_all_valves
-from numpy import c_
+
+
 
 """
 python wrapper for Multiplexer to control Valves connected by wires, 
 supported max 16 channel, 
-for valve 7412type
+for valve 6712type
 0 is Low (0V) -> valve open
 1 is High(5V) -> valve close 
 """
@@ -61,7 +61,7 @@ class Multiplexer(object):
             tuple: error,trigger
         """
         trigger=c_int32()
-        error=MUX_Get_Trig(self.Instr_ID,byref(trigger))
+        error=MUX_Get_Trig(self.Mux_ID,byref(trigger))
         return error,trigger.value
 
     def MuxWire_setAll_valves(self,valves_array:list=[0]*16):
@@ -80,7 +80,7 @@ class Multiplexer(object):
         if valves_array:
             if len(valves_array)==16:
                 for index,val in enumerate(valves_array):
-                    valves_array[index] = c_int32(val)
+                    valve_state[index] = c_int32(val)
                 error=MUX_Wire_Set_all_valves(self.Mux_ID,valve_state,16)
         return error,valves_array
 
@@ -92,27 +92,26 @@ class Multiplexer(object):
         Args:
             valves_array (list): list of 16 int (0 or 1) for all 0-15 channels
         Returns:
-            tuple:error,valve_array
+            tuple:error,valve_array[list]
         """
         valve_state=(c_int32*16)(0)
         error=-1
         if valves_array:
             if len(valves_array)==16:
                 for index,val in enumerate(valves_array):
-                    valves_array[index] = c_int32(val)
+                    valve_state[index] = c_int32(val)
                 error=MUX_Set_all_valves(self.Mux_ID,valve_state,16)
         return error,valves_array
 
     def set_indiv_valve(self,valve_in:int,valve_out:int,state:int):
         """set the state of one value
-        specific for MUX cross chip ,
+        specific for MUX cross chip only ,
         0 is closed, 1 is open
         Args:
             valve_channel (int): channel number for this value
             state (int): 0 is close, 1 is open
         """
         error=MUX_Set_indiv_valve(self.Mux_ID,c_int32(valve_in),c_int32(valve_out),c_int32(state))
-        ### should test
         return error
     
     def close_Mux(self):
@@ -124,5 +123,17 @@ class Multiplexer(object):
 
 if __name__=="__main__":
     # bulid one multiplexer with name from NI MAX tool
-    Mux_valve=Multiplexer(name='Mux')
-    Mux_valve.initialize_MUX()
+    Mux_valve=Multiplexer(name='Dev2')
+    error_init,Mux_ID=Mux_valve.initialize_MUX()
+    print(f'Fluidic valve controller initialized with error: {error_init} and ID: {Mux_ID}')
+    error_trig,trigger=Mux_valve.Mux_get_Trigger()
+    print(f'error_trig: {error_init} and trigger: {trigger}')
+    valve_state_off=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    valve_state_on=[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    time.sleep(0.5)
+    # for valves use MuxWire_setAll_valves
+    error_set,valve_list=Mux_valve.MuxWire_setAll_valves(valve_state_off)
+    print(f'set all valves with error: {error_set}, valve_list: {valve_list}')
+    # close communication
+    error_close=Mux_valve.close_Mux()
+    print(f'close multiplexer with error:{error_close},0 means OK')
