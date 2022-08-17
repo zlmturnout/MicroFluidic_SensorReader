@@ -1,4 +1,3 @@
-from re import S
 import sys,time
 from _ast import Load
 sys.path.append('DLL64')#add the path of the library here
